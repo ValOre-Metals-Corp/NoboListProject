@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ValOre NOBO – Bubble Map by FSA (Income View)</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { height: 95vh; width: 100%; }
+
+    /* Caixa de filtro */
+    #filter-box {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      z-index: 5;
+    }
+
+    #filter-box select {
+      padding: 5px;
+      font-size: 14px;
+    }
+
+    /* Legenda */
+    #legend {
+      position: absolute;
+      bottom: 25px;
+      left: 15px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      line-height: 1.4;
+      z-index: 5;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="filter-box">
+    <b>Filter by Province:</b>
+    <select id="provinceFilter">
+      <option value="ALL">All Provinces</option>
+    </select>
+  </div>
+
+  <div id="legend">
+    <b>Average Income Scale</b><br>
+    <div><span style="color:#1a237e;">⬤</span> Low Income</div>
+    <div><span style="color:#3288bd;">⬤</span> Moderate</div>
+    <div><span style="color:#66c2a5;">⬤</span> High</div>
+    <div><span style="color:#ffd700;">⬤</span> Very High</div>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="config.js"></script>
+  <script>
+    let map, circles = [], data = [];
+
+    async function initMap() {
+      // Centralizar no Canadá
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 56.1304, lng: -106.3468 },
+        zoom: 4
+      });
+
+      // Carregar dados do JSON
+      const response = await fetch("investors_fsa.json");
+      data = await response.json();
+
+      // Popular o filtro de província
+      const provinces = [...new Set(data.map(d => d.province))];
+      const select = document.getElementById("provinceFilter");
+      provinces.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", updateMap);
+      updateMap();
+    }
+
+    function getColorByIncome(income) {
+      if (income > 120) return "#ffd700";   // Very High → Dourado
+      if (income > 90)  return "#66c2a5";   // High → Verde-azulado
+      if (income > 70)  return "#3288bd";   // Moderate → Azul médio
+      return "#1a237e";                     // Low → Azul escuro
+    }
+
+    function updateMap() {
+      const province = document.getElementById("provinceFilter").value;
+
+      // Remover círculos antigos
+      circles.forEach(c => c.setMap(null));
+      circles = [];
+
+      // Filtrar dados
+      const filtered = province === "ALL" ? data : data.filter(d => d.province === province);
+
+      // Criar bolhas
+      filtered.forEach(d => {
+        const radius = Math.sqrt(d.shares) * 0.05; // tamanho proporcional ao total de shares
+        const color = getColorByIncome(d.income);
+
+        const circle = new google.maps.Circle({
+          strokeColor: color,
+          strokeOpacity: 0.8,
+          strokeWeight: 1.5,
+          fillColor: color,
+          fillOpacity: 0.35,
+          map,
+          center: { lat: d.lat, lng: d.lon },
+          radius
+        });
+
+        const info = new google.maps.InfoWindow({
+          content: `
+            <div style="font-size:14px; line-height:1.6;">
+              <b>FSA:</b> ${d.fsa}<br>
+              <b>Province:</b> ${d.province}<br>
+              <b>Total Shares:</b> ${d.shares.toLocaleString()}<br>
+              <b>Avg. Income:</b> $${d.income.toFixed(1)}K<br>
+              <b>Investors:</b> ${d.investor_count}
+            </div>`
+        });
+
+        circle.addListener("click", () => info.open(map));
+        circles.push(circle);
+      });
+    }
+
+    // Carregar o script do Maps com a chave segura
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>

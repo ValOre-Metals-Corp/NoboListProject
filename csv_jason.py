@@ -1,6 +1,5 @@
 import pandas as pd
-import os 
-import streamlit
+import os
 
 # Caminho corrigido
 file_path = os.path.join("data", "Nobo_List_Map.csv")
@@ -11,6 +10,7 @@ df = pd.read_csv(file_path)
 # 2. Manter colunas importantes
 df_small = df[[
     "INVESTOR (CONSOLIDATED)",
+    "FSA",
     "CITY",
     "PROVINCE",
     "NUMBER OF SHARES",
@@ -25,6 +25,7 @@ df_small = df[[
 # 3. Renomear colunas
 df_small = df_small.rename(columns={
     "INVESTOR (CONSOLIDATED)": "name",
+    "FSA": "fsa",
     "CITY": "city",
     "PROVINCE": "province",
     "NUMBER OF SHARES": "shares",
@@ -35,7 +36,8 @@ df_small = df_small.rename(columns={
 })
 
 # 4. Exportar para JSON
-df_small.to_json("investors.json", orient="records", indent=2)
+output_path = os.path.join("investors.json")
+df_small.to_json(output_path, orient="records", indent=2)
 
 print("✅ Arquivo 'investors.json' criado com sucesso!")
 print(f"Total de investidores com coordenadas: {len(df_small)}")
