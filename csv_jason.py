@@ -1,8 +1,9 @@
 import pandas as pd
+import os 
 import streamlit
 
 # Caminho corrigido
-file_path = r"C:\Projects\Nobo_List_Map\data\Nobo_List_Map.csv"
+file_path = os.path.join("data", "Nobo_List_Map.csv")
 
 # 1. Carregar a base
 df = pd.read_csv(file_path)
@@ -11,7 +12,7 @@ df = pd.read_csv(file_path)
 df_small = df[[
     "INVESTOR (CONSOLIDATED)",
     "CITY",
-     "PROVINCE",
+    "PROVINCE",
     "NUMBER OF SHARES",
     "lat",
     "lon",
