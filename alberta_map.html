@@ -207,7 +207,7 @@
           let lon = inv.lon;
           const coordKey = `${lat.toFixed(4)},${lon.toFixed(4)}`;
 
-          // 🟡 Evitar sobreposição
+          // Evita sobreposição
           if (usedCoords.has(coordKey)) {
             const offset = (Math.random() - 0.5) * 0.001;
             lat += offset;
@@ -218,7 +218,7 @@
           const marker = new google.maps.Marker({
             position: { lat, lng: lon },
             map,
-            icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/grey-dot.png",
+            icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png",
             title: `${inv.name} (${inv.cluster})`
           });
 
@@ -262,15 +262,18 @@
         counterDiv.textContent = `Visible Investors: ${visibleCount}`;
       }
 
-      // === Filtros ===
+      // === Filtros (corrigido) ===
       const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
       checkboxes.forEach(cb => {
         cb.addEventListener("change", () => {
           const activeClusters = Array.from(checkboxes)
             .filter(c => c.checked)
             .map(c => c.value);
+
           markers.forEach(obj => {
+            obj.marker.setVisible(activeClusters.includes(obj.cluster));
           });
+
           updateCounter();
         });
       });
@@ -289,5 +292,3 @@
   </script>
 </body>
 </html>
-
-
