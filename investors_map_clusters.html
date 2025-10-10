@@ -171,7 +171,7 @@
                 Shares: ${Number(inv.shares).toLocaleString()}<br>
                 Cluster: ${inv.cluster}<br>
                 Income: ${inv.income ? "$" + Number(inv.income).toLocaleString() : "N/A"}<br>
-                Estimated Age: ${inv.age || "N/A"}
+                Estimated Age: ${inv.age ? Math.round(inv.age) : "N/A"} years
               </div>`
           });
 
