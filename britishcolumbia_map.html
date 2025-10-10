@@ -111,7 +111,8 @@
     <label><input type="checkbox" value="High-Potential Contacts" checked> High-Potential</label>
     <label><input type="checkbox" value="Potential Contacts" checked> Potential</label>
     <label><input type="checkbox" value="Low-Potential Contacts" checked> Low-Potential</label>
-    <label><input type="checkbox" value="Non-Contactable Investors" checked> Non-Contactable</label>
+    <label><input type="checkbox" value="Pending Contact Method" checked> Pending Contact Method</label>
+    <label><input type="checkbox" value="Do Not Contact" checked> Do Not Contact</label>
   </div>
 
   <div id="legend" class="legend"><b>Legend</b></div>
@@ -158,19 +159,20 @@
         inv.province && inv.province.toUpperCase() === "BRITISH COLUMBIA"
       );
 
+      // === Ícones por cluster ===
       const clusterIcons = {
         "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
         "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
         "Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
         "Low-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-        "Non-Contactable Investors": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+        "Pending Contact Method": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+        "Do Not Contact": "http://maps.google.com/mapfiles/ms/icons/grey-dot.png"
       };
 
       // === Criar marcadores com pequeno offset ===
       const markers = [];
       investorsBC.forEach(inv => {
         if (inv.lat && inv.lon) {
-          // Adiciona leve variação aleatória de até ±0.0003
           const latOffset = (Math.random() - 0.5) * 0.0006;
           const lonOffset = (Math.random() - 0.5) * 0.0006;
 
@@ -191,7 +193,7 @@
                 Cluster: ${inv.cluster}<br>
                 <hr>
                 <b>Regional Data (FSA):</b><br>
-                Avg. Income: $${Number(inv.income).toLocaleString('en-US', { maximumFractionDigits: 0 })} K<br>
+                Avg. Income: $${Number(inv.income).toLocaleString('en-US', { maximumFractionDigits: 0 })}<br>
                 Avg. Age: ${Math.round(inv.age)} years
               </div>`
           });
@@ -241,14 +243,12 @@
   </script>
 
   <script src="config.js"></script>
-<script>
-  const script = document.createElement("script");
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-</script>
+  <script>
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
 </body>
 </html>
-
-

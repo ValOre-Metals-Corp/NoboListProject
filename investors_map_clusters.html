@@ -114,7 +114,8 @@
     <label><input type="checkbox" id="clusterHigh" checked> High-Potential</label>
     <label><input type="checkbox" id="clusterPotential" checked> Potential</label>
     <label><input type="checkbox" id="clusterLow" checked> Low-Potential</label>
-    <label><input type="checkbox" id="clusterNon" checked> Non-Contactable</label>
+    <label><input type="checkbox" id="clusterPending" checked> Pending Contact Method</label>
+    <label><input type="checkbox" id="clusterNon" checked> Do Not Contact</label>
   </div>
 
   <div id="map"></div>
@@ -128,17 +129,21 @@
         center: centerCanada,
       });
 
+      // === Carregar dados do JSON ===
       const response = await fetch("investors.json");
       const investors = await response.json();
 
+      // === Ícones por cluster ===
       const clusterIcons = {
         "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
         "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
         "Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
         "Low-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-        "Non-Contactable Investors": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+        "Pending Contact Method": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+        "Do Not Contact": "http://maps.google.com/mapfiles/ms/icons/grey-dot.png"
       };
 
+      // === Agrupar marcadores ===
       const markersByCluster = {};
       for (const cluster in clusterIcons) {
         markersByCluster[cluster] = [];
@@ -147,7 +152,6 @@
       // === Criar marcadores com pequeno offset aleatório ===
       investors.forEach(inv => {
         if (inv.lat && inv.lon) {
-          // 🔹 leve variação (até ±0.0006°)
           const latOffset = (Math.random() - 0.5) * 0.0006;
           const lonOffset = (Math.random() - 0.5) * 0.0006;
 
@@ -155,7 +159,7 @@
             position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
             map: map,
             title: `${inv.name} (${inv.city})`,
-            icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/gray-dot.png"
           });
 
           const info = new google.maps.InfoWindow({
@@ -163,8 +167,11 @@
               <div style="font-size:14px; line-height:1.4;">
                 <b>${inv.name}</b><br>
                 City: ${inv.city}<br>
+                Province: ${inv.province}<br>
                 Shares: ${Number(inv.shares).toLocaleString()}<br>
                 Cluster: ${inv.cluster}<br>
+                Income: ${inv.income ? "$" + Number(inv.income).toLocaleString() : "N/A"}<br>
+                Estimated Age: ${inv.age || "N/A"}
               </div>`
           });
 
@@ -184,7 +191,7 @@
         legend.appendChild(div);
       }
 
-      // 🔹 Contador na legenda
+      // === Contador ===
       const counterDiv = document.createElement("div");
       counterDiv.id = "counter";
       counterDiv.textContent = "Visible Investors: 0";
@@ -207,7 +214,8 @@
         "High-Potential Contacts": document.getElementById("clusterHigh"),
         "Potential Contacts": document.getElementById("clusterPotential"),
         "Low-Potential Contacts": document.getElementById("clusterLow"),
-        "Non-Contactable Investors": document.getElementById("clusterNon")
+        "Pending Contact Method": document.getElementById("clusterPending"),
+        "Do Not Contact": document.getElementById("clusterNon")
       };
 
       for (const [cluster, checkbox] of Object.entries(checkboxes)) {
@@ -223,14 +231,15 @@
   </script>
 
   <script src="config.js"></script>
-<script>
-  const script = document.createElement("script");
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-</script>
+  <script>
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
 </body>
 </html>
+
 
 
