@@ -35,9 +35,26 @@ df_small = df_small.rename(columns={
     "AVERAGE_AGE_ESTIMATED": "age"
 })
 
+# 3.5. 🧹 Padronizar nomes dos clusters
+df_small["cluster"] = df_small["cluster"].str.strip().replace({
+    "Pending Contact Method (Consent Without Email)": "Pending Contact Method",
+    "Pending contact method": "Pending Contact Method",
+    "Pending": "Pending Contact Method",
+    "Do not contact": "Do Not Contact",
+    "Non-contactable": "Do Not Contact",
+    "Non Contactable Investors": "Do Not Contact",
+    "High potential contacts": "High-Potential Contacts",
+    "Low potential contacts": "Low-Potential Contacts",
+    "Potential contacts": "Potential Contacts",
+    "Top priority contacts": "Top Priority Contacts"
+})
+
 # 4. Exportar para JSON
 output_path = os.path.join("investors.json")
 df_small.to_json(output_path, orient="records", indent=2)
 
 print("✅ Arquivo 'investors.json' criado com sucesso!")
 print(f"Total de investidores com coordenadas: {len(df_small)}")
+print("\nCategorias de cluster encontradas:")
+print(df_small['cluster'].value_counts())
+
