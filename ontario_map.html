@@ -3,26 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ValOre NOBO Investors – Ontario (Corridor)</title>
+    <title>ValOre NOBO Investors – Ontario (Highway Corridors)</title>
     <style>
       #map { height: 90vh; width: 100%; }
       body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
 
       /* 🔹 Back button */
       #back-button {
-        position: absolute;
-        top: 15px;
-        left: 210px;
-        background-color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        color: #17193b;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 13px;
-        z-index: 10;
-        transition: all 0.2s ease-in-out;
+        position: absolute; top: 15px; left: 210px;
+        background-color: white; padding: 8px 14px; border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: #17193b;
+        text-decoration: none; font-weight: 600; font-size: 13px; z-index: 10;
       }
       #back-button:hover {
         background-color: #f2f2f2;
@@ -31,52 +22,20 @@
 
       /* 🔹 Floating title */
       h3 {
-        position: absolute;
-        top: 60px;
-        left: 15px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 16px;
-        color: #17193b;
-        z-index: 9;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-        margin: 0;
+        position: absolute; top: 60px; left: 15px;
+        background: rgba(255,255,255,0.9);
+        padding: 6px 10px; border-radius: 6px; font-size: 16px; color: #17193b;
+        z-index: 9; box-shadow: 0 1px 4px rgba(0,0,0,0.2); margin: 0;
       }
-
-      /* 🔹 Filter box */
-      #filter-box {
-        position: absolute;
-        top: 125px;
-        left: 10px;
-        background: white;
-        padding: 12px 16px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        font-size: 14px;
-        z-index: 5;
-        line-height: 1.6;
-      }
-      #filter-box b { display: block; margin-bottom: 4px; color: #17193b; }
-      #filter-box label { display: block; margin: 3px 0; }
 
       /* 🔹 Legend */
       .legend {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 12px 14px;
-        font-size: 14px;
-        font-family: Arial, sans-serif;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        line-height: 1.6;
-        position: absolute;
-        bottom: 25px;
-        left: 15px;
-        z-index: 5;
+        background: rgba(255,255,255,0.95);
+        padding: 12px 14px; font-size: 14px; font-family: Arial, sans-serif;
+        border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        position: absolute; bottom: 25px; left: 15px; z-index: 5;
       }
       .legend img { vertical-align: middle; margin-right: 6px; }
-
-      /* 🔹 Counter */
       #counter { margin-top: 8px; font-weight: bold; text-align: center; color: #17193b; }
     </style>
   </head>
@@ -86,58 +45,24 @@
     <h3>ValOre NOBO Investors – Ontario</h3>
     <div id="map"></div>
 
-    <!-- Filter box -->
-    <div id="filter-box">
-      <b>Show Clusters:</b>
-      <label><input type="checkbox" value="Top Priority Contacts" checked> Top Priority</label>
-      <label><input type="checkbox" value="High-Potential Contacts" checked> High-Potential</label>
-      <label><input type="checkbox" value="Potential Contacts" checked> Potential</label>
-      <label><input type="checkbox" value="Low-Potential Contacts" checked> Low-Potential</label>
-      <label><input type="checkbox" value="Pending Contact Method" checked> Pending Contact Method</label>
-      <label><input type="checkbox" value="Do Not Contact" checked> Do Not Contact</label>
-    </div>
-
     <div id="legend" class="legend"><b>Legend</b></div>
 
     <script>
       async function initMap() {
         const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 7,
-          center: { lat: 44.1, lng: -79.6 }
+          zoom: 7, center: { lat: 44.1, lng: -79.6 }
         });
 
-        // === Reference points ===
+        // --- Reference points ---
         const collingwood = { lat: 44.5007, lng: -80.2169 };
         const airport = { lat: 43.6777, lng: -79.6248 };
         const cityHall = { lat: 43.6532, lng: -79.3832 };
 
-        // === Markers ===
-        new google.maps.Marker({
-          position: collingwood,
-          map,
-          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(30, 30) },
-          title: "Collingwood"
-        });
-        new google.maps.Marker({
-          position: airport,
-          map,
-          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/airports.png", scaledSize: new google.maps.Size(30, 30) },
-          title: "Toronto Pearson International Airport"
-        });
-        new google.maps.Marker({
-          position: cityHall,
-          map,
-          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(30, 30) },
-          title: "Toronto City Hall"
-        });
-
-        // === Toronto circle (reduced radius to 40 km) ===
+        // --- Toronto & Collingwood Circles ---
         new google.maps.Circle({
           strokeColor: "#4169E1", strokeOpacity: 0.5, strokeWeight: 1.5,
           fillColor: "#4169E1", fillOpacity: 0.10, map, center: cityHall, radius: 40000
         });
-
-        // === Collingwood reach circles (unchanged) ===
         new google.maps.Circle({
           strokeColor: "#4B0082", strokeOpacity: 0.5, strokeWeight: 1.5,
           fillColor: "#4B0082", fillOpacity: 0.10, map, center: collingwood, radius: 30000
@@ -147,35 +72,88 @@
           fillColor: "#9370DB", fillOpacity: 0.08, map, center: collingwood, radius: 60000
         });
 
-        // === Highway Corridor Polygon ===
-        const corridorPath = [
-          { lat: 44.50, lng: -80.22 }, // Collingwood
-          { lat: 44.39, lng: -79.69 }, // Barrie
-          { lat: 44.10, lng: -79.90 }, // Orangeville / Mono
-          { lat: 43.90, lng: -79.50 }, // Vaughan
-          { lat: 43.70, lng: -79.40 }, // Toronto
-          { lat: 43.90, lng: -79.50 },
-          { lat: 44.10, lng: -79.90 },
-          { lat: 44.39, lng: -79.69 },
-          { lat: 44.50, lng: -80.22 }
+        // --- Highway Corridor (broad zone) ---
+        const corridorOuter = [
+          { lat: 44.55, lng: -80.30 },
+          { lat: 44.45, lng: -79.55 },
+          { lat: 44.15, lng: -79.80 },
+          { lat: 43.85, lng: -79.35 },
+          { lat: 43.60, lng: -79.25 },
+          { lat: 43.85, lng: -79.65 },
+          { lat: 44.15, lng: -80.10 },
+          { lat: 44.45, lng: -80.45 },
+          { lat: 44.55, lng: -80.30 }
         ];
 
         new google.maps.Polygon({
-          paths: corridorPath,
-          strokeColor: "#708090",      // Slate gray border
+          paths: corridorOuter,
+          strokeColor: "#A9A9A9",
+          strokeOpacity: 0.6,
+          strokeWeight: 1,
+          fillColor: "#C0C0FF", // soft lavender-gray
+          fillOpacity: 0.25,
+          map: map
+        });
+
+        // --- Highway 400 (solid black line) ---
+        const highway400 = [
+          collingwood,
+          { lat: 44.39, lng: -79.69 }, // Barrie
+          { lat: 43.90, lng: -79.51 }, // Vaughan
+          cityHall
+        ];
+        new google.maps.Polyline({
+          path: highway400,
+          geodesic: true,
+          strokeColor: "#000000",
           strokeOpacity: 0.8,
-          strokeWeight: 1.5,
-          fillColor: "#C8C8FF",        // Soft lavender-blue fill
-          fillOpacity: 0.20,
+          strokeWeight: 2,
           map
         });
 
-        // === Load investors ===
-        const response = await fetch("investors.json");
-        const allInvestors = await response.json();
-        const investorsON = allInvestors.filter(inv => inv.province && inv.province.toUpperCase() === "ONTARIO");
+        // --- Highway 10 (dashed black line) ---
+        const highway10 = [
+          collingwood,
+          { lat: 44.30, lng: -80.00 }, // Shelburne
+          { lat: 43.92, lng: -79.97 }, // Orangeville
+          { lat: 43.77, lng: -79.73 }, // Caledon
+          cityHall
+        ];
+        new google.maps.Polyline({
+          path: highway10,
+          geodesic: true,
+          strokeColor: "#000000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 }, offset: "0", repeat: "15px" }],
+          map
+        });
 
-        // === Cluster icons (small) ===
+        // --- Markers ---
+        new google.maps.Marker({
+          position: collingwood,
+          map,
+          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(28, 28) },
+          title: "Collingwood"
+        });
+        new google.maps.Marker({
+          position: airport,
+          map,
+          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/airports.png", scaledSize: new google.maps.Size(28, 28) },
+          title: "Toronto Pearson International Airport"
+        });
+        new google.maps.Marker({
+          position: cityHall,
+          map,
+          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(28, 28) },
+          title: "Toronto City Hall"
+        });
+
+        // --- Load Investors ---
+        const response = await fetch("investors.json");
+        const investors = await response.json();
+        const investorsON = investors.filter(inv => inv.province && inv.province.toUpperCase() === "ONTARIO");
+
         const clusterIcons = {
           "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
           "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -185,25 +163,18 @@
           "Do Not Contact": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
         };
 
-        const markers = [];
         investorsON.forEach(inv => {
           if (inv.lat && inv.lon) {
-            const latOffset = (Math.random() - 0.5) * 0.0006;
-            const lonOffset = (Math.random() - 0.5) * 0.0006;
-            const marker = new google.maps.Marker({
-              position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
+            new google.maps.Marker({
+              position: { lat: inv.lat, lng: inv.lon },
               map,
-              icon: {
-                url: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/grey-dot.png",
-                scaledSize: new google.maps.Size(14, 14)
-              },
+              icon: { url: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/grey-dot.png", scaledSize: new google.maps.Size(13, 13) },
               title: `${inv.name} (${inv.cluster})`
             });
-            markers.push({ marker, cluster: inv.cluster });
           }
         });
 
-        // === Legend ===
+        // --- Legend ---
         const legend = document.getElementById("legend");
         legend.innerHTML = `
           <b>Legend</b>
@@ -217,7 +188,9 @@
           <div><span style="color:#4B0082;">⬤</span> Collingwood 30 km</div>
           <div><span style="color:#9370DB;">⬤</span> Collingwood 60 km</div>
           <div><span style="color:#4169E1;">⬤</span> Toronto 40 km</div>
-          <div><span style="color:#708090;">⬛</span> Highway Corridor Zone</div>
+          <div><span style="color:#C0C0FF;">⬛</span> Corridor Zone</div>
+          <div><span style="color:#000000;">━</span> Highway 400 (solid)</div>
+          <div><span style="color:#000000;">⋯⋯⋯</span> Highway 10 (dashed)</div>
         `;
       }
     </script>
