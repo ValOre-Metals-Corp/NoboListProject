@@ -99,7 +99,6 @@
 
     <div id="legend" class="legend"><b>Legend</b></div>
 
-    <!-- =================== GOOGLE MAP SCRIPT =================== -->
     <script>
       async function initMap() {
         const map = new google.maps.Map(document.getElementById("map"), {
@@ -112,74 +111,82 @@
         const airport = { lat: 43.6777, lng: -79.6248 };
         const cityHall = { lat: 43.6532, lng: -79.3832 };
 
-        // Markers
+        // === Markers ===
         new google.maps.Marker({
           position: collingwood,
           map,
-          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(40, 40) },
+          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(30, 30) },
           title: "Collingwood"
         });
         new google.maps.Marker({
           position: airport,
           map,
-          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/airports.png", scaledSize: new google.maps.Size(40, 40) },
+          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/airports.png", scaledSize: new google.maps.Size(30, 30) },
           title: "Toronto Pearson International Airport"
         });
         new google.maps.Marker({
           position: cityHall,
           map,
-          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(40, 40) },
+          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(30, 30) },
           title: "Toronto City Hall"
         });
 
         // === Toronto circles ===
         new google.maps.Circle({
-          strokeColor: "#0000FF", strokeOpacity: 0.6, strokeWeight: 2,
-          fillColor: "#0000FF", fillOpacity: 0.1, map, center: airport, radius: 30000
-        });
-        new google.maps.Circle({
-          strokeColor: "#FF0000", strokeOpacity: 0.6, strokeWeight: 2,
-          fillColor: "#FF0000", fillOpacity: 0.1, map, center: cityHall, radius: 20000
+          strokeColor: "#4169E1", strokeOpacity: 0.5, strokeWeight: 1.5,
+          fillColor: "#4169E1", fillOpacity: 0.10, map, center: cityHall, radius: 60000
         });
 
         // === Collingwood reach circles ===
         new google.maps.Circle({
-          strokeColor: "#008000", strokeOpacity: 0.6, strokeWeight: 2,
-          fillColor: "#008000", fillOpacity: 0.08, map, center: collingwood, radius: 30000
+          strokeColor: "#4B0082", strokeOpacity: 0.5, strokeWeight: 1.5,
+          fillColor: "#4B0082", fillOpacity: 0.10, map, center: collingwood, radius: 30000
         });
         new google.maps.Circle({
-          strokeColor: "#006400", strokeOpacity: 0.6, strokeWeight: 2,
-          fillColor: "#006400", fillOpacity: 0.05, map, center: collingwood, radius: 60000
+          strokeColor: "#9370DB", strokeOpacity: 0.4, strokeWeight: 1.5,
+          fillColor: "#9370DB", fillOpacity: 0.08, map, center: collingwood, radius: 60000
         });
 
         // === Highways ===
         const highway400 = [
           collingwood, { lat: 44.39, lng: -79.69 }, // Barrie
-          { lat: 43.90, lng: -79.51 }, // Vaughan
+          { lat: 43.85, lng: -79.50 }, // Vaughan
           cityHall
         ];
         const highway10 = [
-          collingwood, { lat: 44.30, lng: -80.00 }, // Shelburne
-          { lat: 43.90, lng: -79.90 }, // Caledon/Brampton
+          collingwood, { lat: 44.08, lng: -80.20 }, // Shelburne
+          { lat: 43.75, lng: -79.95 }, // Caledon/Brampton
           cityHall
         ];
+
+        // Highway 400 - dashed black
         new google.maps.Polyline({
-          path: highway400, geodesic: true,
-          strokeColor: "#FF0000", strokeOpacity: 0.9, strokeWeight: 3, map
+          path: highway400,
+          geodesic: true,
+          strokeColor: "#000000",
+          strokeOpacity: 0.9,
+          strokeWeight: 2.5,
+          icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 3 }, offset: "0", repeat: "12px" }],
+          map
         });
+
+        // Highway 10 - dotted gray
         new google.maps.Polyline({
-          path: highway10, geodesic: true,
-          strokeColor: "#FFA500", strokeOpacity: 0.9, strokeWeight: 3, map
+          path: highway10,
+          geodesic: true,
+          strokeColor: "#555555",
+          strokeOpacity: 0.8,
+          strokeWeight: 2.5,
+          icons: [{ icon: { path: "M 0,0 1,0", strokeOpacity: 1, scale: 3 }, offset: "0", repeat: "16px" }],
+          map
         });
 
         // === Load investors ===
         const response = await fetch("investors.json");
         const allInvestors = await response.json();
-        const investorsON = allInvestors.filter(
-          inv => inv.province && inv.province.toUpperCase() === "ONTARIO"
-        );
+        const investorsON = allInvestors.filter(inv => inv.province && inv.province.toUpperCase() === "ONTARIO");
 
-        // === Cluster icons ===
+        // === Cluster icons (smaller) ===
         const clusterIcons = {
           "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
           "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -197,7 +204,10 @@
             const marker = new google.maps.Marker({
               position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
               map,
-              icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/grey-dot.png",
+              icon: {
+                url: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/grey-dot.png",
+                scaledSize: new google.maps.Size(14, 14)
+              },
               title: `${inv.name} (${inv.cluster})`
             });
 
@@ -224,18 +234,22 @@
           }
         });
 
-        // === Legend ===
+        // === Legend (updated colors) ===
         const legend = document.getElementById("legend");
-        legend.innerHTML = "<b>Legend</b><br>";
-        for (const [cluster, iconUrl] of Object.entries(clusterIcons)) {
-          const div = document.createElement("div");
-          div.innerHTML = `<img src="${iconUrl}"> ${cluster}`;
-          legend.appendChild(div);
-        }
-        legend.innerHTML += `
-          <div><span style="color:#FF0000;">&#8212;&#8212;&#8212;</span> Highway 400</div>
-          <div><span style="color:#FFA500;">&#8212;&#8212;&#8212;</span> Highway 10</div>
-          <div><span style="color:#008000;">⬤</span> Collingwood reach (30–60 km)</div>
+        legend.innerHTML = `
+          <b>Legend</b>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/green-dot.png"> Top Priority Contacts</div>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"> High-Potential Contacts</div>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/purple-dot.png"> Potential Contacts</div>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/pink-dot.png"> Low-Potential Contacts</div>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/orange-dot.png"> Pending Contact Method</div>
+          <div><img src="http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"> Do Not Contact</div>
+          <hr>
+          <div><span style="color:#000000;">&#8212;&#8212;&#8212;</span> Highway 400 (Dashed)</div>
+          <div><span style="color:#555555;">&#183;&#183;&#183;</span> Highway 10 (Dotted)</div>
+          <div><span style="color:#4B0082;">⬤</span> Collingwood 30 km</div>
+          <div><span style="color:#9370DB;">⬤</span> Collingwood 60 km</div>
+          <div><span style="color:#4169E1;">⬤</span> Toronto 60 km</div>
         `;
 
         // === Counter ===
@@ -278,4 +292,5 @@
     </script>
   </body>
 </html>
+
 
