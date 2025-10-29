@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ValOre NOBO Investors – Ontario</title>
+    <title>ValOre NOBO Investors – Ontario (Corridor)</title>
     <style>
       #map { height: 90vh; width: 100%; }
       body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
@@ -131,13 +131,13 @@
           title: "Toronto City Hall"
         });
 
-        // === Toronto circles ===
+        // === Toronto circle (reduced radius to 40 km) ===
         new google.maps.Circle({
           strokeColor: "#4169E1", strokeOpacity: 0.5, strokeWeight: 1.5,
-          fillColor: "#4169E1", fillOpacity: 0.10, map, center: cityHall, radius: 60000
+          fillColor: "#4169E1", fillOpacity: 0.10, map, center: cityHall, radius: 40000
         });
 
-        // === Collingwood reach circles ===
+        // === Collingwood reach circles (unchanged) ===
         new google.maps.Circle({
           strokeColor: "#4B0082", strokeOpacity: 0.5, strokeWeight: 1.5,
           fillColor: "#4B0082", fillOpacity: 0.10, map, center: collingwood, radius: 30000
@@ -147,37 +147,26 @@
           fillColor: "#9370DB", fillOpacity: 0.08, map, center: collingwood, radius: 60000
         });
 
-        // === Highways ===
-        const highway400 = [
-          collingwood, { lat: 44.39, lng: -79.69 }, // Barrie
-          { lat: 43.85, lng: -79.50 }, // Vaughan
-          cityHall
-        ];
-        const highway10 = [
-          collingwood, { lat: 44.08, lng: -80.20 }, // Shelburne
-          { lat: 43.75, lng: -79.95 }, // Caledon/Brampton
-          cityHall
+        // === Highway Corridor Polygon ===
+        const corridorPath = [
+          { lat: 44.50, lng: -80.22 }, // Collingwood
+          { lat: 44.39, lng: -79.69 }, // Barrie
+          { lat: 44.10, lng: -79.90 }, // Orangeville / Mono
+          { lat: 43.90, lng: -79.50 }, // Vaughan
+          { lat: 43.70, lng: -79.40 }, // Toronto
+          { lat: 43.90, lng: -79.50 },
+          { lat: 44.10, lng: -79.90 },
+          { lat: 44.39, lng: -79.69 },
+          { lat: 44.50, lng: -80.22 }
         ];
 
-        // Highway 400 - dashed black
-        new google.maps.Polyline({
-          path: highway400,
-          geodesic: true,
-          strokeColor: "#000000",
-          strokeOpacity: 0.9,
-          strokeWeight: 2.5,
-          icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 3 }, offset: "0", repeat: "12px" }],
-          map
-        });
-
-        // Highway 10 - dotted gray
-        new google.maps.Polyline({
-          path: highway10,
-          geodesic: true,
-          strokeColor: "#555555",
+        new google.maps.Polygon({
+          paths: corridorPath,
+          strokeColor: "#708090",      // Slate gray border
           strokeOpacity: 0.8,
-          strokeWeight: 2.5,
-          icons: [{ icon: { path: "M 0,0 1,0", strokeOpacity: 1, scale: 3 }, offset: "0", repeat: "16px" }],
+          strokeWeight: 1.5,
+          fillColor: "#C8C8FF",        // Soft lavender-blue fill
+          fillOpacity: 0.20,
           map
         });
 
@@ -186,7 +175,7 @@
         const allInvestors = await response.json();
         const investorsON = allInvestors.filter(inv => inv.province && inv.province.toUpperCase() === "ONTARIO");
 
-        // === Cluster icons (smaller) ===
+        // === Cluster icons (small) ===
         const clusterIcons = {
           "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
           "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -210,31 +199,11 @@
               },
               title: `${inv.name} (${inv.cluster})`
             });
-
-            const info = new google.maps.InfoWindow({
-              content: `
-                <div style="font-size:14px; line-height:1.5; max-width:280px;">
-                  <b>${inv.name}</b><br>
-                  <b>City:</b> ${inv.city || "N/A"}<br>
-                  <b>Shares:</b> ${Number(inv.shares).toLocaleString()}<br>
-                  <b>Tier:</b> ${inv.tier || "N/A"}<br>
-                  <b>Cluster:</b> ${inv.cluster || "N/A"}<br>
-                  <hr style="margin:6px 0;">
-                  <b>Regional Data (FSA):</b><br>
-                  Avg. Income: $${Number(inv.income).toLocaleString('en-US', { maximumFractionDigits: 0 })} K<br>
-                  Avg. Age: ${Math.round(inv.age)} years
-                  <hr style="margin:6px 0;">
-                  <b>Distances (from Toronto):</b><br>
-                  🛫 <b>Airport:</b> ${inv.dist_to_airport_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_airport_min) || "N/A"} min<br>
-                  🏛️ <b>City Hall:</b> ${inv.dist_to_cityhall_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_cityhall_min) || "N/A"} min
-                </div>`
-            });
-            marker.addListener("click", () => info.open(map, marker));
             markers.push({ marker, cluster: inv.cluster });
           }
         });
 
-        // === Legend (updated colors) ===
+        // === Legend ===
         const legend = document.getElementById("legend");
         legend.innerHTML = `
           <b>Legend</b>
@@ -245,40 +214,11 @@
           <div><img src="http://maps.google.com/mapfiles/ms/icons/orange-dot.png"> Pending Contact Method</div>
           <div><img src="http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"> Do Not Contact</div>
           <hr>
-          <div><span style="color:#000000;">&#8212;&#8212;&#8212;</span> Highway 400 (Dashed)</div>
-          <div><span style="color:#555555;">&#183;&#183;&#183;</span> Highway 10 (Dotted)</div>
           <div><span style="color:#4B0082;">⬤</span> Collingwood 30 km</div>
           <div><span style="color:#9370DB;">⬤</span> Collingwood 60 km</div>
-          <div><span style="color:#4169E1;">⬤</span> Toronto 60 km</div>
+          <div><span style="color:#4169E1;">⬤</span> Toronto 40 km</div>
+          <div><span style="color:#708090;">⬛</span> Highway Corridor Zone</div>
         `;
-
-        // === Counter ===
-        const counterDiv = document.createElement("div");
-        counterDiv.id = "counter";
-        counterDiv.textContent = "Visible Investors: 0";
-        legend.appendChild(counterDiv);
-        map.getDiv().appendChild(legend);
-
-        function updateCounter() {
-          const visibleCount = markers.filter(obj => obj.marker.getVisible()).length;
-          counterDiv.textContent = `Visible Investors: ${visibleCount}`;
-        }
-
-        // === Filters ===
-        const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
-        checkboxes.forEach(cb => {
-          cb.addEventListener("change", () => {
-            const activeClusters = Array.from(checkboxes)
-              .filter(c => c.checked)
-              .map(c => c.value);
-            markers.forEach(obj => {
-              obj.marker.setVisible(activeClusters.includes(obj.cluster));
-            });
-            updateCounter();
-          });
-        });
-
-        updateCounter();
       }
     </script>
 
@@ -292,5 +232,3 @@
     </script>
   </body>
 </html>
-
-
