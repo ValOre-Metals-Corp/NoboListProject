@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ValOre NOBO Investors – Ontario</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -111,6 +112,28 @@
       width: 14px;
       height: 14px;
     }
+
+    /* Area counter box */
+    #area-counter {
+      position: absolute;
+      bottom: 30px;
+      right: 25px;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #17193b;
+      z-index: 6;
+      width: 220px;
+    }
+
+    #area-counter b {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 
@@ -131,6 +154,15 @@
 
   <div id="legend" class="legend"><b>Legend</b></div>
 
+  <div id="area-counter">
+    <b>Area Counters</b>
+    <div>Toronto 40 km: <span id="count-toronto">0</span></div>
+    <div>Collingwood 40 km: <span id="count-collingwood">0</span></div>
+    <div>Corridor (15 km): <span id="count-corridor">0</span></div>
+    <hr>
+    <div><b>Total visible:</b> <span id="count-total">0</span></div>
+  </div>
+
   <script>
     async function initMap() {
       const map = new google.maps.Map(document.getElementById("map"), {
@@ -142,6 +174,7 @@
       const collingwood = { lat: 44.5008, lng: -80.2144 };
       const toronto = { lat: 43.6532, lng: -79.3832 };
 
+      // City markers
       new google.maps.Marker({
         position: collingwood,
         map,
@@ -295,24 +328,73 @@
       legend.appendChild(counterDiv);
       map.getDiv().appendChild(legend);
 
+      // Core functions
       function updateCounter() {
         const visibleCount = markers.filter((o) => o.marker.getVisible()).length;
         counterDiv.textContent = `Visible Investors: ${visibleCount}`;
       }
 
-      // Filters
+      function distance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(lat1 * Math.PI / 180) *
+          Math.cos(lat2 * Math.PI / 180) *
+          Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      }
+
+      function pointInPolygon(point, vs) {
+        const x = point.lng, y = point.lat;
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+          const xi = vs[i].lng, yi = vs[i].lat;
+          const xj = vs[j].lng, yj = vs[j].lat;
+          const intersect = ((yi > y) !== (yj > y)) &&
+            (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
+
+      function updateAreaCounters() {
+        let torontoCount = 0, collingwoodCount = 0, corridorCount = 0;
+        markers.forEach(o => {
+          if (!o.marker.getVisible()) return;
+          const pos = o.marker.getPosition();
+          const lat = pos.lat(), lon = pos.lng();
+          const dToronto = distance(lat, lon, toronto.lat, toronto.lng);
+          const dCollingwood = distance(lat, lon, collingwood.lat, collingwood.lng);
+          if (dToronto <= 40) torontoCount++;
+          if (dCollingwood <= 40) collingwoodCount++;
+          if (pointInPolygon({ lat, lng: lon }, corridor)) corridorCount++;
+        });
+
+        document.getElementById("count-toronto").textContent = torontoCount;
+        document.getElementById("count-collingwood").textContent = collingwoodCount;
+        document.getElementById("count-corridor").textContent = corridorCount;
+        document.getElementById("count-total").textContent =
+          markers.filter(o => o.marker.getVisible()).length;
+      }
+
+      // Filter logic
       const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
-      checkboxes.forEach((cb) => {
+      checkboxes.forEach(cb => {
         cb.addEventListener("change", () => {
           const active = Array.from(checkboxes)
-            .filter((c) => c.checked)
-            .map((c) => c.value);
-          markers.forEach((o) => o.marker.setVisible(active.includes(o.cluster)));
+            .filter(c => c.checked)
+            .map(c => c.value);
+          markers.forEach(o => o.marker.setVisible(active.includes(o.cluster)));
           updateCounter();
+          updateAreaCounters();
         });
       });
 
+      // Initial updates
       updateCounter();
+      updateAreaCounters();
     }
   </script>
 
