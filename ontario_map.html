@@ -107,23 +107,22 @@
         // Reference points
         const collingwood = { lat: 44.5007, lng: -80.2169 };
         const toronto = { lat: 43.6532, lng: -79.3832 };
-        const airport = { lat: 43.6777, lng: -79.6248 };
 
         // City markers
         new google.maps.Marker({
           position: collingwood,
           map,
-          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(38, 38) },
+          icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: new google.maps.Size(36, 36) },
           title: "Collingwood"
         });
         new google.maps.Marker({
           position: toronto,
           map,
-          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(38, 38) },
+          icon: { url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png", scaledSize: new google.maps.Size(36, 36) },
           title: "Toronto City Hall"
         });
 
-        // Circles
+        // Circles (one for each city)
         new google.maps.Circle({
           strokeColor: "#0066FF", strokeOpacity: 0.7, strokeWeight: 2,
           fillColor: "#0066FF", fillOpacity: 0.08, map, center: toronto, radius: 40000
@@ -141,28 +140,27 @@
           collingwood, { lat: 44.30, lng: -80.00 }, { lat: 43.90, lng: -79.90 }, toronto
         ];
 
-        new google.maps.Polyline({
-          path: highway400, geodesic: true, strokeColor: "#000000",
-          strokeOpacity: 0.8, strokeWeight: 2, icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 }, offset: "0", repeat: "20px" }],
-          map
+        [highway400, highway10].forEach(path => {
+          new google.maps.Polyline({
+            path: path, geodesic: true, strokeColor: "#000000",
+            strokeOpacity: 0.8, strokeWeight: 2,
+            icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 }, offset: "0", repeat: "20px" }],
+            map
+          });
         });
 
-        new google.maps.Polyline({
-          path: highway10, geodesic: true, strokeColor: "#000000",
-          strokeOpacity: 0.8, strokeWeight: 2, icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 1, scale: 4 }, offset: "0", repeat: "20px" }],
-          map
-        });
-
-        // Corridor (solid red outline)
+        // Corridor polygon (15 km buffer around the two highways)
         const corridor = [
-          collingwood,
-          { lat: 44.39, lng: -79.69 }, // Barrie
-          { lat: 43.90, lng: -79.51 }, // Vaughan
-          toronto,
-          { lat: 43.75, lng: -79.80 }, // Brampton
-          { lat: 43.92, lng: -80.10 }, // Orangeville
-          collingwood
+          { lat: 44.62, lng: -80.35 }, // west of Collingwood
+          { lat: 44.48, lng: -79.58 }, // north of Barrie
+          { lat: 44.05, lng: -79.30 }, // east of Vaughan
+          { lat: 43.60, lng: -79.35 }, // east Toronto edge
+          { lat: 43.55, lng: -79.85 }, // west Toronto (Mississauga)
+          { lat: 43.85, lng: -80.15 }, // Orangeville zone
+          { lat: 44.35, lng: -80.25 }, // Shelburne buffer
+          { lat: 44.62, lng: -80.35 }  // back to start
         ];
+
         new google.maps.Polygon({
           paths: corridor,
           strokeColor: "#FF0000",
@@ -203,22 +201,6 @@
               },
               title: `${inv.name} (${inv.cluster})`
             });
-
-            const info = new google.maps.InfoWindow({
-              content: `
-                <div style="font-size:14px; line-height:1.5; max-width:280px;">
-                  <b>${inv.name}</b><br>
-                  <b>City:</b> ${inv.city || "N/A"}<br>
-                  <b>Shares:</b> ${Number(inv.shares).toLocaleString()}<br>
-                  <b>Tier:</b> ${inv.tier || "N/A"}<br>
-                  <b>Cluster:</b> ${inv.cluster || "N/A"}<br>
-                  <hr style="margin:6px 0;">
-                  <b>Regional Data (FSA):</b><br>
-                  Avg. Income: $${Number(inv.income).toLocaleString('en-US', { maximumFractionDigits: 0 })} K<br>
-                  Avg. Age: ${Math.round(inv.age)} years
-                </div>`
-            });
-            marker.addListener("click", () => info.open(map, marker));
             markers.push({ marker, cluster: inv.cluster });
           }
         });
@@ -233,38 +215,11 @@
         }
         legend.innerHTML += `
           <hr>
-          <div><span style="color:#FF0000;">&#8212;&#8212;&#8212;</span> Corridor (Collingwood–Toronto Axis)</div>
+          <div><span style="color:#FF0000;">&#8212;&#8212;&#8212;</span> Corridor (15 km buffer around Highways 400 & 10)</div>
           <div><span style="color:#000;">&#8212;&#8212;&#8212;</span> Highways 400 & 10 (Dashed)</div>
           <div><span style="color:#0066FF;">⬤</span> Toronto 40 km radius</div>
           <div><span style="color:#FF9900;">⬤</span> Collingwood 40 km radius</div>
         `;
-
-        // Counter
-        const counterDiv = document.createElement("div");
-        counterDiv.id = "counter";
-        counterDiv.textContent = "Visible Investors: 0";
-        legend.appendChild(counterDiv);
-        map.getDiv().appendChild(legend);
-
-        function updateCounter() {
-          const visibleCount = markers.filter(obj => obj.marker.getVisible()).length;
-          counterDiv.textContent = `Visible Investors: ${visibleCount}`;
-        }
-
-        const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
-        checkboxes.forEach(cb => {
-          cb.addEventListener("change", () => {
-            const activeClusters = Array.from(checkboxes)
-              .filter(c => c.checked)
-              .map(c => c.value);
-            markers.forEach(obj => {
-              obj.marker.setVisible(activeClusters.includes(obj.cluster));
-            });
-            updateCounter();
-          });
-        });
-
-        updateCounter();
       }
     </script>
 
