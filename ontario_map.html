@@ -360,25 +360,39 @@
       }
 
       function updateAreaCounters() {
-        let torontoCount = 0, collingwoodCount = 0, corridorCount = 0;
-        markers.forEach(o => {
-          if (!o.marker.getVisible()) return;
-          const pos = o.marker.getPosition();
-          const lat = pos.lat(), lon = pos.lng();
-          const dToronto = distance(lat, lon, toronto.lat, toronto.lng);
-          const dCollingwood = distance(lat, lon, collingwood.lat, collingwood.lng);
-          if (dToronto <= 40) torontoCount++;
-          if (dCollingwood <= 40) collingwoodCount++;
-          if (pointInPolygon({ lat, lng: lon }, corridor)) corridorCount++;
-        });
+  let torontoCount = 0, collingwoodCount = 0, corridorCount = 0;
+  
+  markers.forEach(o => {
+    if (!o.marker.getVisible()) return;
 
-        document.getElementById("count-toronto").textContent = torontoCount;
-        document.getElementById("count-collingwood").textContent = collingwoodCount;
-        document.getElementById("count-corridor").textContent = corridorCount;
-        document.getElementById("count-total").textContent =
-          markers.filter(o => o.marker.getVisible()).length;
-      }
+    // Use original coordinates from dataset (without offsets)
+    const inv = investorsON.find(i => i.lat && i.lon && i.name === o.marker.getTitle().split(" (")[0]);
+    if (!inv) return;
+    const lat = inv.lat, lon = inv.lon;
 
+    const dToronto = distance(lat, lon, toronto.lat, toronto.lng);
+    const dCollingwood = distance(lat, lon, collingwood.lat, collingwood.lng);
+    const insideToronto = dToronto <= 40;
+    const insideCollingwood = dCollingwood <= 40;
+    const insideCorridor = pointInPolygon({ lat, lng: lon }, corridor);
+
+    // Hierarchical priority
+    if (insideToronto) {
+      torontoCount++;
+    } else if (insideCollingwood) {
+      collingwoodCount++;
+    } else if (insideCorridor) {
+      corridorCount++;
+    }
+  });
+
+  // Update UI
+  document.getElementById("count-toronto").textContent = torontoCount;
+  document.getElementById("count-collingwood").textContent = collingwoodCount;
+  document.getElementById("count-corridor").textContent = corridorCount;
+  document.getElementById("count-total").textContent =
+    markers.filter(o => o.marker.getVisible()).length;
+}
       // Filter logic
       const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
       checkboxes.forEach(cb => {
